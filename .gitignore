@@ -1,0 +1,30 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Env
+.env
+.env.local
+.env.production
+
+# Build
+dist/
+build/
+.vercel/
+.netlify/
+
+# Logs
+*.log
+logs/

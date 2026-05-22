@@ -1,34 +1,26 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "headers": [
+    {
+      "source": "/style.css",
+      "headers": [
+        { "key": "Content-Type", "value": "text/css" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
+    {
+      "source": "/script.js",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
         { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
-    },
-    {
-      "source": "/style.css",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
-    },
-    {
-      "source": "/script.js",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
     }
   ]
 }

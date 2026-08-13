@@ -1,9 +1,61 @@
 /* =============================================
    DABLU KUMAR PORTFOLIO — SCRIPT.JS
-   Animations · Interactions · Particles
+   Theme Switcher · Animations · Interactions
 ============================================= */
 
 'use strict';
+
+// ====== THEME TOGGLER (Initialize immediately) ======
+function initTheme() {
+  const toggleBtn = document.getElementById('themeToggleBtn');
+  
+  // Get stored theme or detect system preference (defaults to dark for modern developer feel)
+  const savedTheme = localStorage.getItem('portfolio_theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initialTheme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'dark');
+
+  setTheme(initialTheme);
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+      
+      // Haptic/visual micro-interaction
+      toggleBtn.style.transform = 'scale(0.88) rotate(35deg)';
+      setTimeout(() => {
+        toggleBtn.style.transform = '';
+      }, 300);
+    });
+  }
+
+  // Listen to system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('portfolio_theme')) {
+      setTheme(e.matches ? 'dark' : 'light');
+    }
+  });
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.body.setAttribute('data-theme', theme);
+  localStorage.setItem('portfolio_theme', theme);
+  
+  const toggleBtn = document.getElementById('themeToggleBtn');
+  if (toggleBtn) {
+    toggleBtn.setAttribute('title', theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+    toggleBtn.setAttribute('aria-label', theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+  }
+
+  if (window.updateParticleTheme) {
+    window.updateParticleTheme(theme);
+  }
+}
+
+// Run theme setup immediately to prevent theme flash
+initTheme();
 
 // ====== LOADER ======
 window.addEventListener('load', () => {
@@ -14,7 +66,7 @@ window.addEventListener('load', () => {
       document.body.classList.remove('loading');
       initAnimations();
     }
-  }, 2000);
+  }, 1600);
 });
 
 // Prevent scroll during load
@@ -37,7 +89,13 @@ function initParticles() {
   window.addEventListener('resize', resize);
   window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-  const colors = ['rgba(108,99,255,', 'rgba(0,212,255,', 'rgba(255,101,132,', 'rgba(255,217,61,'];
+  const darkColors = ['rgba(108,99,255,', 'rgba(0,212,255,', 'rgba(255,101,132,', 'rgba(255,217,61,'];
+  const lightColors = ['rgba(79,70,229,', 'rgba(2,132,199,', 'rgba(225,29,72,', 'rgba(217,119,6,'];
+
+  function getThemeColors() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    return isLight ? lightColors : darkColors;
+  }
 
   class Particle {
     constructor() { this.reset(); }
@@ -49,8 +107,9 @@ function initParticles() {
       this.baseY = this.y;
       this.vx = (Math.random() - 0.5) * 0.3;
       this.vy = (Math.random() - 0.5) * 0.3;
-      this.color = colors[Math.floor(Math.random() * colors.length)];
-      this.alpha = Math.random() * 0.5 + 0.1;
+      const palette = getThemeColors();
+      this.color = palette[Math.floor(Math.random() * palette.length)];
+      this.alpha = Math.random() * 0.5 + 0.15;
       this.life = Math.random() * 200 + 100;
       this.maxLife = this.life;
     }
@@ -86,8 +145,16 @@ function initParticles() {
   const count = Math.min(120, Math.floor(window.innerWidth / 12));
   for (let i = 0; i < count; i++) particles.push(new Particle());
 
+  window.updateParticleTheme = function() {
+    particles.forEach(p => {
+      const palette = getThemeColors();
+      p.color = palette[Math.floor(Math.random() * palette.length)];
+    });
+  };
+
   // Draw connections
   function drawConnections() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x;
@@ -97,7 +164,9 @@ function initParticles() {
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(108,99,255,${(1 - dist / 120) * 0.08})`;
+          ctx.strokeStyle = isLight
+            ? `rgba(79,70,229,${(1 - dist / 120) * 0.12})`
+            : `rgba(108,99,255,${(1 - dist / 120) * 0.08})`;
           ctx.lineWidth = 0.5;
           ctx.stroke();
         }
